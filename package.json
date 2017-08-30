@@ -1,6 +1,6 @@
 {
   "name": "osm-p2p-api",
-  "description": "Handy OSM API functions for dealing with data from an osm-p2p-db.",
+  "description": "Functions for implementing the OSM API using osm-p2p-db.",
   "author": "Stephen Whitmore <sww@eight.net>",
   "version": "0.0.0",
   "repository": {

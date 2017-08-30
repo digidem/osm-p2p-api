@@ -1,7 +1,7 @@
 var test = require('tape')
 var through = require('through2')
 var Duplex = require('readable-stream/duplex')
-var createGetMap = require('../api/get_map')
+var osmApi = require('../api/get_map')
 
 var bounds = {
   minLat: 1,
@@ -20,9 +20,9 @@ test('getMap', t => {
       return through()
     }
   }
+  var api = osmApi(mockedOsm)
   var bbox = [bounds.minLon, bounds.minLat, bounds.maxLon, bounds.maxLat]
-  var getMap = createGetMap(mockedOsm)
   t.equal(typeof getMap, 'function')
-  var s = getMap(bbox, {order: 'type'})
+  var s = api.getMap(bbox, {order: 'type'})
   t.true(s instanceof Duplex, 'instance of Duplex stream')
 })
