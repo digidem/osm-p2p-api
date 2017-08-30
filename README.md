@@ -21,16 +21,33 @@ move.
 
 ```js
 var osmApi = require('osm-p2p-api')
+var osmP2p = require('osm-p2p-mem')
 
+var osm = osmP2p()
 var api = osmApi(osm)
 
-api.getMap(...)
+var node = {
+  type: 'node',
+  lat: 14,
+  lon: -1
+}
+
+osm.create(node, function () {
+  var bbox = [-180, -85, 180, 85]
+  var stream = api.getMap(bbox, function (err, res) {
+    console.log(res)
+  })
+})
 ```
 
 outputs
 
 ```
-???
+[ { type: 'node',
+    lat: 14,
+    lon: -1,
+    id: '14932367278207151409',
+    version: '6b8042a175ba486961d3d11277c6a6e9c0f882da3036dcd1e68e96e3acc45a95' } ]
 ```
 
 ## API
@@ -48,7 +65,7 @@ Constructs a new API object over the `osm-p2p-db` instance `osm`.
 Get all OSM documents in the bounding box `bbox`, which is of the form
 
 ```js
-var bbox = [ [ minLatitude, maxLatitude ], [ minLongitude, maxLongitude ] ]
+var bbox = [minLon, minLat, maxLon, maxLat]
 ```
 
 `opts`, if provided, accepts the following properties:
