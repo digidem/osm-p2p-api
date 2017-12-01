@@ -15,6 +15,7 @@ module.exports = function (osm) {
       opts = {}
     }
     opts.forks = opts.forks || false
+    opts.order = 'type'
 
     var query = [[bbox[1], bbox[3]], [bbox[0], bbox[2]]] // left,bottom,right,top
 
