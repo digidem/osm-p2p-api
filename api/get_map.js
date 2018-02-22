@@ -41,7 +41,7 @@ module.exports = function (osm) {
     })
 
     var pipeline = [
-      osm.queryStream(query, opts),
+      osm.queryStream ? osm.queryStream(query, opts) : osm.query(query, opts),
       deletionFilter,
       checkRefExist(osm),
       mapStream.obj(refs2nodes)
