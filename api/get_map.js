@@ -26,12 +26,14 @@ module.exports = function (osm) {
     // ways from the osm-p2p-db query.
     var nodesSeen = {}
     var deletionFilter = through.obj(function (chunk, enc, next) {
-      if (chunk.type === 'node') {
-        nodesSeen[chunk.id] = true
-      } else if (chunk.type === 'way') {
-        chunk.refs = chunk.refs.filter(function (id) {
-          return !!nodesSeen[id]
-        })
+      if (!chunk.deleted) {
+        if (chunk.type === 'node') {
+          nodesSeen[chunk.id] = true
+        } else if (chunk.type === 'way') {
+          chunk.refs = chunk.refs.filter(function (id) {
+            return !!nodesSeen[id]
+          })
+        }
       }
 
       if (!chunk.deleted) next(null, chunk)
