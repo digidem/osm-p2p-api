@@ -12,7 +12,7 @@ var bounds = {
 
 test('getMap', t => {
   t.plan(4)
-  var expectedQuery = [[bounds.minLat, bounds.maxLat], [bounds.minLon, bounds.maxLon]]
+  var expectedQuery = [bounds.minLon, bounds.minLat, bounds.maxLon, bounds.maxLat]
   var mockedOsm = {
     queryStream: function (query, opts) {
       t.deepEqual(query, expectedQuery, 'calls osm.queryStream with correct query')

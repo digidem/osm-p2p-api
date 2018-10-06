@@ -17,20 +17,17 @@ module.exports = function (osm) {
     opts.forks = opts.forks || false
     opts.order = 'type'
 
-    var query = [[bbox[1], bbox[3]], [bbox[0], bbox[2]]] // left,bottom,right,top
-
     // For now, filter deletions (until downstream can handle them).
     //
     // This also involves removing references to deleted nodes from ways (iD
-    // handles this poorly). This relies on the fact that nodes come before
-    // ways from the osm-p2p-db query.
+    // handles this poorly). This relies on the reordering step.
     var nodesSeen = {}
     var deletionFilter = through.obj(function (chunk, enc, next) {
       if (!chunk.deleted) {
-        if (chunk.type === 'node') {
+        if (chunk.element && chunk.element.type === 'node') {
           nodesSeen[chunk.id] = true
-        } else if (chunk.type === 'way') {
-          chunk.refs = chunk.refs.filter(function (id) {
+        } else if (chunk.element && chunk.element.type === 'way') {
+          chunk.element.refs = (chunk.element.refs || []).filter(function (id) {
             return !!nodesSeen[id]
           })
         }
@@ -41,7 +38,8 @@ module.exports = function (osm) {
     })
 
     var pipeline = [
-      osm.queryStream ? osm.queryStream(query, opts) : osm.query(query, opts),
+      osm.queryStream ? osm.queryStream(bbox, opts) : osm.query(bbox, opts),
+      orderByType(),
       deletionFilter,
       checkRefExist(osm),
       mapStream.obj(refs2nodes)
@@ -74,4 +72,30 @@ function deforkStream () {
 var typeOrder = { node: 0, way: 1, relation: 2 }
 function cmpType (a, b) {
   return typeOrder[a.type] - typeOrder[b.type]
+}
+
+function orderByType () {
+  var queue = { ways: [], relations: [] }
+  return through.obj(write, end)
+  function write (chunk, enc, next) {
+    if (chunk && chunk.element && chunk.element.type === 'way') {
+      queue.ways.push(chunk)
+      next()
+    } else if (chunk && chunk.element && chunk.element.type === 'relation') {
+      queue.relations.push(chunk)
+      next()
+    } else {
+      next(null, chunk)
+    }
+  }
+  function end (next) {
+    var self = this
+    queue.ways.forEach(function (way) {
+      self.push(way)
+    })
+    queue.relations.forEach(function (rel) {
+      self.push(rel)
+    })
+    next()
+  }
 }
